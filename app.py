@@ -1,11 +1,7 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 
-plt.rcParams["font.sans-serif"] = ["SimHei"]
-plt.rcParams["axes.unicode_minus"] = False
-
-# ------------ 贵州茅台2023-2025财务原始数据 ------------
+# 你的财务数据
 data = {
     "年份": [2023, 2024, 2025],
     "总资产": [272699660092.25, 298944579918.70, 303834844021.44],
@@ -19,17 +15,20 @@ data = {
 }
 df = pd.DataFrame(data)
 
-# ------------ 计算财务指标、杜邦 ------------
-df["流动比率"] = df["货币资金"] / df["总负债"]
-df["资产负债率"] = df["总负债"] / df["总资产"]
-df["销售净利率"] = df["净利润"] / df["营业收入"]
-df["资产周转率"] = df["营业收入"] / df["总资产"]
-df["权益乘数"] = 1 / (1 - df["资产负债率"])
-df["净资产收益率ROE"] = df["销售净利率"] * df["资产周转率"] * df["权益乘数"]
+# 计算财务指标
+def calc(df):
+    df["流动比率"] = df["货币资金"] / df["总负债"]
+    df["资产负债率"] = df["总负债"] / df["总资产"]
+    df["销售净利率"] = df["净利润"] / df["营业收入"]
+    df["资产周转率"] = df["营业收入"] / df["总资产"]
+    df["权益乘数"] = 1 / (1 - df["资产负债率"])
+    df["ROE(杜邦)"] = df["销售净利率"] * df["资产周转率"] * df["权益乘数"]
+    return df
+df = calc(df)
 
-# ------------ 登录页 ------------
+# 登录页面
 def login_page():
-    st.title("🔐 财务分析系统 — 登录界面")
+    st.title("🔐 财务数据分析系统 — 登录")
     st.write("请输入账号密码进入系统")
     user = st.text_input("账号：")
     pwd = st.text_input("密码：", type="password")
@@ -40,7 +39,7 @@ def login_page():
         else:
             st.error("账号密码错误")
 
-# ------------ 主系统分页 ------------
+# 主系统分页
 def main_page():
     # 左侧菜单栏
     st.sidebar.title("📋 功能导航")
@@ -59,10 +58,10 @@ def main_page():
 
     # 页面1：首页
     if select == "🏠 系统首页":
-        st.title("🏠 欢迎进入财务分析系统")
+        st.title("🏠 欢迎进入财务数据分析系统")
         st.divider()
         st.write("本系统基于Python+Streamlit网页开发")
-        st.write("包含：财务数据查询、指标分析、杜邦分析、可视化图表")
+        st.write("包含：财务数据查询、指标分析、杜邦分析、数据可视化")
 
     # 页面2：原始数据
     elif select == "📑 原始财务数据":
@@ -73,27 +72,23 @@ def main_page():
     elif select == "📊 财务指标分析页面":
         st.title("📊 财务指标分析（独立页面）")
         st.write("核心短期偿债、偿债能力、盈利指标")
-        show_data = df[["年份","流动比率","资产负债率","销售净利率","净资产收益率ROE"]].round(3)
+        show_data = df[["年份","流动比率","资产负债率","销售净利率","ROE(杜邦)"]].round(3)
         st.dataframe(show_data, use_container_width=True)
 
     # 页面4：杜邦【单独一页】
     elif select == "📈 杜邦分析独立页面":
         st.title("📈 杜邦综合分析（独立页面）")
         st.info("杜邦公式：ROE = 销售净利率 × 资产周转率 × 权益乘数")
-        dup = df[["年份","净资产收益率ROE","销售净利率","资产周转率","权益乘数"]].round(3)
+        dup = df[["年份","ROE(杜邦)","销售净利率","资产周转率","权益乘数"]].round(3)
         st.dataframe(dup, use_container_width=True)
 
-    # 页面5：图表
+    # 页面5：图表（换成Streamlit自带图表，不用matplotlib）
     elif select == "📉 数据可视化图表":
         st.title("📉 营收净利润趋势图表页面")
-        fig,ax = plt.subplots(figsize=(9,4))
-        ax.plot(df["年份"],df["营业收入"],marker="o",label="营业收入")
-        ax.plot(df["年份"],df["净利润"],marker="s",label="净利润")
-        ax.legend()
-        ax.grid(True)
-        st.pyplot(fig)
+        chart_df = df[["年份", "营业收入", "净利润"]].set_index("年份")
+        st.line_chart(chart_df, use_container_width=True)
 
-# ------------ 程序入口 ------------
+# 程序入口
 if "flag" not in st.session_state:
     st.session_state.flag = 0
 
