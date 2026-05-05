@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-# 你的财务数据
+# 数据来源：贵州茅台官网 2023-2025 年年度财务报告
 data = {
     "年份": [2023, 2024, 2025],
     "总资产": [272699660092.25, 298944579918.70, 303834844021.44],
@@ -15,7 +15,7 @@ data = {
 }
 df = pd.DataFrame(data)
 
-# 计算财务指标
+# 财务指标、杜邦计算
 def calc(df):
     df["流动比率"] = df["货币资金"] / df["总负债"]
     df["资产负债率"] = df["总负债"] / df["总资产"]
@@ -26,10 +26,11 @@ def calc(df):
     return df
 df = calc(df)
 
-# 登录页面
+# 登录页
 def login_page():
-    st.title("🔐 财务数据分析系统 — 登录")
-    st.write("请输入账号密码进入系统")
+    st.title("🔐 贵州茅台财务数据分析系统 — 登录")
+    st.write("账号：admin ｜ 密码：123456")
+
     user = st.text_input("账号：")
     pwd = st.text_input("密码：", type="password")
     if st.button("点击登录"):
@@ -37,11 +38,10 @@ def login_page():
             st.session_state.flag = 1
             st.rerun()
         else:
-            st.error("账号密码错误")
+            st.error("账号或密码错误")
 
-# 主系统分页
+# 主界面
 def main_page():
-    # 左侧菜单栏
     st.sidebar.title("📋 功能导航")
     select = st.sidebar.radio(
         "请选择功能页面",
@@ -56,35 +56,43 @@ def main_page():
         st.session_state.flag = 0
         st.rerun()
 
-    # 页面1：首页
+    # 首页
     if select == "🏠 系统首页":
-        st.title("🏠 欢迎进入财务数据分析系统")
+        st.title("🏠 贵州茅台财务数据分析系统")
         st.divider()
-        st.write("本系统基于Python+Streamlit网页开发")
-        st.write("包含：财务数据查询、指标分析、杜邦分析、数据可视化")
+        st.write("📌 数据来源：**贵州茅台官网 2023-2025 年年度财务报告**")
+        st.write("本系统基于 Python + Streamlit 开发，围绕贵州茅台三年公开财务数据，实现：")
+        st.write("• 原始财务数据展示")
+        st.write("• 核心财务指标自动计算与分析")
+        st.write("• 杜邦分析体系拆解评价")
+        st.write("• 经营数据可视化趋势展示")
 
-    # 页面2：原始数据
+    # 原始数据
     elif select == "📑 原始财务数据":
-        st.title("📑 原始财务数据页面")
+        st.title("📑 贵州茅台 原始财务数据")
+        st.info("数据来源：贵州茅台官网 2023-2025 年年度财务报告")
         st.dataframe(df.iloc[:,0:8].round(2), use_container_width=True)
 
-    # 页面3：财务指标【单独一页】
+    # 财务指标
     elif select == "📊 财务指标分析页面":
-        st.title("📊 财务指标分析（独立页面）")
-        st.write("核心短期偿债、偿债能力、盈利指标")
+        st.title("📊 贵州茅台 财务指标分析")
+        st.info("数据来源：贵州茅台官网 2023-2025 年年度财务报告")
+        st.write("涵盖偿债能力、盈利能力、营运能力核心指标")
         show_data = df[["年份","流动比率","资产负债率","销售净利率","ROE(杜邦)"]].round(3)
         st.dataframe(show_data, use_container_width=True)
 
-    # 页面4：杜邦【单独一页】
+    # 杜邦分析
     elif select == "📈 杜邦分析独立页面":
-        st.title("📈 杜邦综合分析（独立页面）")
-        st.info("杜邦公式：ROE = 销售净利率 × 资产周转率 × 权益乘数")
+        st.title("📈 贵州茅台 杜邦综合分析")
+        st.info("数据来源：贵州茅台官网 2023-2025 年年度财务报告")
+        st.write("杜邦核心公式：ROE = 销售净利率 × 资产周转率 × 权益乘数")
         dup = df[["年份","ROE(杜邦)","销售净利率","资产周转率","权益乘数"]].round(3)
         st.dataframe(dup, use_container_width=True)
 
-    # 页面5：图表（换成Streamlit自带图表，不用matplotlib）
+    # 可视化图表
     elif select == "📉 数据可视化图表":
-        st.title("📉 营收净利润趋势图表页面")
+        st.title("📉 贵州茅台 营收&净利润趋势图")
+        st.info("数据来源：贵州茅台官网 2023-2025 年年度财务报告")
         chart_df = df[["年份", "营业收入", "净利润"]].set_index("年份")
         st.line_chart(chart_df, use_container_width=True)
 
